@@ -1,29 +1,76 @@
-module Prettify where
+module Prettify
+    (
+      Doc
+    , empty
+    , char
+    , text
+    , double
+    , line
+    , (<>)
+    , hcat
+    , fsep
+    , (</>)
+    , punctuate
+    , group
+    , softline
+    ) where
 
 import Prelude hiding ((<>))
 
-data Doc = ToBeDefined
-         deriving (Show)
+data Doc = Empty
+         | Char Char
+         | Text String
+         | Line
+         | Concat Doc Doc
+         | Union Doc Doc
+           deriving (Show, Eq)
 
-text :: String -> Doc
-text _ = undefined
-
-double :: Double -> Doc
-double _ = undefined
+empty :: Doc
+empty = Empty
 
 char :: Char -> Doc
-char _ = undefined
+char c = Char c
+
+text :: String -> Doc
+text "" = Empty
+text s  = Text s
+
+double :: Double -> Doc
+double d = text (show d)
+
+line :: Doc
+line = Line
 
 (<>) :: Doc -> Doc -> Doc
-_ <> _ = undefined
+Empty <> y = y
+x <> Empty = x
+x <> y = x `Concat` y
 
 hcat :: [Doc] -> Doc
-hcat _ = undefined
+hcat = fold (<>)
+
+fold :: (Doc -> Doc -> Doc) -> [Doc] -> Doc
+fold f = foldr f empty
 
 fsep :: [Doc] -> Doc
-fsep _ = undefined
+fsep = fold (</>)
+
+(</>) :: Doc -> Doc -> Doc
+x </> y = x <> softline <> y
+
+softline :: Doc
+softline = group line
+
+group :: Doc -> Doc
+group x = flatten x `Union` x
+
+flatten :: Doc -> Doc
+flatten (x `Concat` y) = flatten x `Concat` flatten y
+flatten Line           = Char ' '
+flatten (x `Union` _)  = flatten x
+flatten other          = other
 
 punctuate :: Doc -> [Doc] -> [Doc]
-punctuate _ []     = []
-punctuate _ [d]    = [d]
+punctuate p []     = []
+punctuate p [d]    = [d]
 punctuate p (d:ds) = (d <> p) : punctuate p ds
