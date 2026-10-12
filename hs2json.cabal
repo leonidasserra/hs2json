@@ -1,32 +1,38 @@
 cabal-version:      3.0
 name:               hs2json
 version:            0.1.0.0
--- synopsis:
--- description:
+synopsis:           Biblioteca JSON com pretty printing e testes QuickCheck
+description:
+    Tipo JValue com accessors seguros, um renderizador ingenuo e uma
+    biblioteca de pretty printing baseada no tipo abstrato Doc.
 license:            BSD-3-Clause
 license-file:       LICENSE
 author:             Leonidas Serra, Jose Nunes
 maintainer:         leonidas.serra@discente.ufma.br
--- copyright:
+category:           Text
 build-type:         Simple
 extra-doc-files:    CHANGELOG.md
--- extra-source-files:
 
 common warnings
     ghc-options: -Wall
 
 library
+    import:           warnings
     exposed-modules:
         SimpleJSON
         PutJSON
         Prettify
         PrettyJSON
     hs-source-dirs:   src
-    build-depends:    base >=4.14 && <5
+    build-depends:
+        base >= 4.14 && < 5
     default-language: Haskell2010
 
 executable hs2json
+    import:           warnings
     main-is:          Main.hs
     hs-source-dirs:   app
-    build-depends:    base >=4.14 && <5, hs2json
+    build-depends:
+        base >= 4.14 && < 5,
+        hs2json
     default-language: Haskell2010

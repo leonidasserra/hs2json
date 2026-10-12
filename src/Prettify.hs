@@ -74,8 +74,8 @@ flatten (x `Union` _)  = flatten x
 flatten other          = other
 
 punctuate :: Doc -> [Doc] -> [Doc]
-punctuate p []     = []
-punctuate p [d]    = [d]
+punctuate _ []     = []
+punctuate _ [d]    = [d]
 punctuate p (d:ds) = (d <> p) : punctuate p ds
 
 compact :: Doc -> String
@@ -109,6 +109,6 @@ pretty width x = best 0 [x]
 
 fits :: Int -> String -> Bool
 w `fits` _ | w < 0 = False
-w `fits` ""        = True
-w `fits` ('\n':_)  = True
-w `fits` (c:cs)    = (w - 1) `fits` cs
+_ `fits` ""        = True
+_ `fits` ('\n':_)  = True
+w `fits` (_:cs)    = (w - 1) `fits` cs
