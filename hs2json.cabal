@@ -17,7 +17,6 @@ common warnings
 
 library
     exposed-modules:
-        MyLib
         SimpleJSON
     hs-source-dirs:   src
     build-depends:    base >=4.14 && <5
