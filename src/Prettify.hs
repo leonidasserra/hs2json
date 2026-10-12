@@ -52,7 +52,8 @@ hcat :: [Doc] -> Doc
 hcat = fold (<>)
 
 fold :: (Doc -> Doc -> Doc) -> [Doc] -> Doc
-fold f = foldr f empty
+fold _ [] = empty
+fold f ds = foldr1 f ds
 
 fsep :: [Doc] -> Doc
 fsep = fold (</>)
