@@ -111,6 +111,8 @@ sepBy :: Doc -> [Doc] -> Doc
 sepBy _   [] = empty
 sepBy sep ds = foldr1 (\x y -> x <> sep <> y) ds
 
+-- | Renderizacao compacta: sempre escolhe o lado achatado de um
+-- 'Union', produzindo a menor saida possivel (uma linha so).
 compact :: Doc -> String
 compact x = transform [x]
     where transform [] = ""
@@ -121,7 +123,7 @@ compact x = transform [x]
                 Text s       -> s ++ transform ds
                 Line         -> '\n' : transform ds
                 a `Concat` b -> transform (a:b:ds)
-                _ `Union` b  -> transform (b:ds)
+                a `Union` _  -> transform (a:ds)
 
 pretty :: Int -> Doc -> String
 pretty width x = best 0 [x]
