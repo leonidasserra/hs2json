@@ -13,6 +13,8 @@ module Prettify
     , punctuate
     , group
     , softline
+    , nest
+    , block
     , compact
     , pretty
     ) where
@@ -77,6 +79,37 @@ punctuate :: Doc -> [Doc] -> [Doc]
 punctuate _ []     = []
 punctuate _ [d]    = [d]
 punctuate p (d:ds) = (d <> p) : punctuate p ds
+
+-- | Indenta em @i@ espaços tudo o que vier depois de cada quebra de
+-- linha do documento. As quebras que ja foram "achatadas" (o lado
+-- esquerdo de um 'Union') nao tem 'Line', entao nao sao afetadas.
+nest :: Int -> Doc -> Doc
+nest i doc
+    | i <= 0    = doc
+    | otherwise = go doc
+  where
+    pad = Text (replicate i ' ')
+    go Line           = Line `Concat` pad
+    go (a `Concat` b) = go a `Concat` go b
+    go (a `Union` b)  = go a `Union` go b
+    go other          = other
+
+-- | Bloco delimitado (array/objeto): ou tudo em uma linha, ou um item
+-- por linha, indentado em @i@ espacos, com o fechamento na sua propria
+-- linha. O lado esquerdo do 'Union' e a versao achatada.
+block :: Int -> Char -> Char -> [Doc] -> Doc
+block _ open close [] = char open <> char close
+block i open close ds = flat `Union` broken
+  where
+    flat   = flatten (char open <> sepBy (char ' ') ds <> char close)
+    broken = char open <> nest i (line <> sepBy line ds)
+                       <> line <> char close
+
+-- | Intercala um separador entre os documentos, sem sobra no final
+-- (diferente de @fold@, que cola o separador antes do 'empty').
+sepBy :: Doc -> [Doc] -> Doc
+sepBy _   [] = empty
+sepBy sep ds = foldr1 (\x y -> x <> sep <> y) ds
 
 compact :: Doc -> String
 compact x = transform [x]
