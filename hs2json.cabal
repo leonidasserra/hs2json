@@ -25,7 +25,8 @@ library
         PrettyJSON
     hs-source-dirs:   src
     build-depends:
-        base >= 4.14 && < 5
+        base       >= 4.14 && < 5,
+        QuickCheck >= 2.14 && < 3
     default-language: Haskell2010
 
 executable hs2json
@@ -35,4 +36,15 @@ executable hs2json
     build-depends:
         base >= 4.14 && < 5,
         hs2json
+    default-language: Haskell2010
+
+test-suite hs2json-test
+    import:           warnings
+    type:             exitcode-stdio-1.0
+    main-is:          Spec.hs
+    hs-source-dirs:   test
+    build-depends:
+        base       >= 4.14 && < 5,
+        hs2json,
+        QuickCheck >= 2.14 && < 3
     default-language: Haskell2010
