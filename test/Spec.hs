@@ -8,6 +8,7 @@ import Prelude hiding ((<>))
 import Control.Monad (liftM, liftM2)
 import System.Exit (exitFailure)
 import Test.QuickCheck
+import SimpleJSON
 import Data.List (intersperse)
 
 import Prettify
@@ -20,6 +21,38 @@ instance Arbitrary Doc where
               , return Line
               , liftM2 Concat arbitrary arbitrary
               , liftM2 Union  arbitrary arbitrary ]
+
+-- | Gerador de JValue com profundidade E largura limitadas.
+-- O 'resize' em volta de 'listOf' e obrigatorio: sem ele, o tamanho
+-- da lista segue o parametro AMBIENTE do QuickCheck (ate 100) e a
+-- arvore explode em largura, travando o processo.
+instance Arbitrary JValue where
+    arbitrary = sized genJValue
+
+    shrink (JString s)  = JNull : map JString (shrink s)
+    shrink (JNumber n)  = JNull : map JNumber (shrink n)
+    shrink (JBool b)    = JNull : map JBool (shrink b)
+    shrink JNull        = []
+    shrink (JArray vs)  = JNull : vs ++ map JArray (shrink vs)
+    shrink (JObject kv) = JNull : map snd kv ++ map JObject (shrink kv)
+
+genJValue :: Int -> Gen JValue
+genJValue n
+    | n <= 0    = leaf
+    | otherwise = oneof [leaf, recursive]
+  where
+    leaf = oneof
+        [ JString <$> arbitrary
+        , JNumber <$> arbitrary
+        , JBool   <$> arbitrary
+        , pure JNull
+        ]
+    smaller   = genJValue (n `div` 2)
+    field     = (,) <$> arbitrary <*> smaller
+    recursive = oneof
+        [ JObject <$> resize (n `div` 2) (listOf field)
+        , JArray  <$> resize (n `div` 2) (listOf smaller)
+        ]
 
 prop_empty_id :: Doc -> Bool
 prop_empty_id x =
