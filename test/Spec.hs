@@ -9,6 +9,7 @@ import Control.Monad (liftM, liftM2)
 import System.Exit (exitFailure)
 import Test.QuickCheck
 import SimpleJSON
+import Data.Maybe (isJust)
 import Data.List (intersperse)
 
 import Prettify
@@ -89,6 +90,28 @@ prop_punctuate' s xs = punctuate s xs == combine (intersperse s xs)
 
 prop_compact_text :: String -> Bool
 prop_compact_text s = compact (text s) == s
+
+-- | Cada accessor devolve exatamente o conteudo do construtor certo.
+prop_accessors_correct :: JValue -> Bool
+prop_accessors_correct v = case v of
+    JString s -> getString v == Just s
+    JNumber n -> getDouble v == Just n && getInt v == Just (truncate n)
+    JBool b   -> getBool v == Just b
+    JNull     -> isNull v
+    JObject o -> getObject v == Just o
+    JArray a  -> getArray v == Just a
+
+-- | Para qualquer valor, exatamente UM accessor tem sucesso.
+prop_accessors_exclusive :: JValue -> Bool
+prop_accessors_exclusive v = length (filter id checks) == 1
+  where
+    checks = [ isJust (getString v), isJust (getDouble v)
+             , isJust (getBool v),   isJust (getObject v)
+             , isJust (getArray v),  isNull v ]
+
+-- | getInt e getDouble concordam (getInt = truncate . getDouble).
+prop_getInt_consistent :: JValue -> Bool
+prop_getInt_consistent v = getInt v == fmap truncate (getDouble v)
 
 return []
 
