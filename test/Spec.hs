@@ -10,8 +10,8 @@ import System.Exit (exitFailure)
 import Test.QuickCheck
 import SimpleJSON
 import Data.Maybe (isJust)
-import Data.List (intersperse)
-import Data.Char (chr, isHexDigit)
+import Data.List (intersperse, isSuffixOf)
+import Data.Char (chr, isHexDigit, isSpace)
 import Numeric (readHex)
 import PrettyJSON (renderJValue)
 
@@ -159,6 +159,45 @@ unescape ('"':rest) = go rest
                        _         -> Nothing
         _ -> Nothing
 unescape _ = Nothing
+
+-- | Remove espacos e quebras de linha FORA das strings JSON.
+stripLayout :: String -> String
+stripLayout = outside
+  where
+    outside []        = []
+    outside ('"':cs)  = '"' : inside cs
+    outside (c:cs)
+        | isSpace c   = outside cs
+        | otherwise   = c : outside cs
+    inside []          = []
+    inside ('\\':c:cs) = '\\' : c : inside cs
+    inside ('"':cs)    = '"' : outside cs
+    inside (c:cs)      = c : inside cs
+
+-- | Mudar a largura so muda o layout, nunca o conteudo: pretty com
+-- qualquer largura equivale ao compact, a menos de espacos/quebras.
+prop_pretty_same_content :: Positive Int -> JValue -> Bool
+prop_pretty_same_content (Positive w) v =
+    stripLayout (pretty w doc) == stripLayout (compact doc)
+  where doc = renderJValue v
+
+-- | Com largura "infinita", tudo cabe em uma linha: pretty == compact.
+prop_pretty_infinite_is_compact :: JValue -> Bool
+prop_pretty_infinite_is_compact v =
+    pretty maxBound doc == compact doc && '\n' `notElem` compact doc
+  where doc = renderJValue v
+
+-- | Nenhuma linha termina em espaco: o layout nunca deixa sobras.
+prop_no_trailing_spaces :: Positive Int -> JValue -> Bool
+prop_no_trailing_spaces (Positive w) v =
+    all (not . endsWithSpace) (lines (pretty w (renderJValue v)))
+  where endsWithSpace l = " " `isSuffixOf` l
+
+-- | Em layout quebrado, cada nivel de aninhamento indenta 2 espacos:
+-- nenhuma linha comeca com um numero impar de espacos.
+prop_indent_even :: JValue -> Bool
+prop_indent_even v = all (even . length . takeWhile (== ' ')) (lines out)
+  where out = pretty 1 (renderJValue v)
 
 return []
 
