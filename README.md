@@ -6,7 +6,7 @@ uma Biblioteca Haskell* (adaptação de Real World Haskell, caps. 5 e 11).
 
 ## 🎥 Vídeo de apresentação
 
-**▶️ [Assista aqui]([link_do_video](https://youtu.be/yD4IXLelagk))**
+**▶️ [Assista aqui](https://youtu.be/yD4IXLelagk)**
 
 ## Requisitos
 
