@@ -29,7 +29,6 @@ cabal test --enable-coverage    # relatório de cobertura (HPC)
 | `PutJSON` | Renderizador ingênuo direto para `String` |
 | `Prettify` | Biblioteca genérica de pretty printing sobre o tipo `Doc` |
 | `PrettyJSON` | Renderização de `JValue` para `Doc`, com escapes Unicode |
-| `QuickTestes` | Exemplos introdutórios de QuickCheck (qsort, `Ternary`) |
 | `test/Spec.hs` | Instâncias `Arbitrary` e propriedades executadas via `quickCheckAll` |
 
 ## Decisões de projeto
